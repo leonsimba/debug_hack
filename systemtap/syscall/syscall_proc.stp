@@ -1,0 +1,22 @@
+#!/usr/bin/stap
+
+global syscall_list
+
+probe begin
+{
+	printf("System Call monitoring Started ...\n")
+}
+
+probe syscall.*
+{
+	if(execname() == "sshd")
+		syscall_list[probefunc()]++
+}
+
+probe timer.ms(5000)
+{
+	foreach(name in syscall_list)
+		printf("sshd: %s = %d\n", name, syscall_list[name]);
+	exit()
+}
+
