@@ -1,0 +1,30 @@
+#!/usr/bin/stap
+
+global syscalls
+
+function print_top ()
+{
+	cnt=0
+
+	log ("SYSCALL\t\t\t\tCOUNT")
+
+	foreach ([name] in syscalls-) {
+		printf("%-20s\t\t%5d\n", name, syscalls[name])
+		if (cnt++ == 20)
+			break
+	}
+
+	printf("--------------------------------------\n")
+	delete syscalls
+}
+
+probe kernel.function("sys_*")
+{
+	syscalls[probefunc()]++
+}
+
+probe timer.ms(5000)
+{
+	print_top ()
+}
+
