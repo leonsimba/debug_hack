@@ -1,0 +1,33 @@
+#!/usr/bin/stap
+#
+# Usage:
+#    sudo stap -p4 -DMAXSKIPPED=9999 -m ik -g inject_latency.stp sda6 300
+#    sudo staprun ik.ko
+#    echo on|off > /proc/system/ik/inject
+
+global inject, ka_cnt
+
+probe begin
+{
+	println("ik module begin: ");
+}
+
+probe procfs("cnt").read
+{
+	$value = sprintf("%d\n", ka_cnt);
+}
+
+probe procfs("inject").write
+{
+	inject= $value;
+	printf("inject count %d, ka %s", ka_cnt, inject);
+}
+
+probe vfs.read.return, vfs.write.return
+{
+	if ($return && devname == @1 && inject == "on\n") {
+		ka_cnt++;
+		udelay($2);
+	}
+}
+
