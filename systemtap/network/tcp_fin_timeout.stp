@@ -1,0 +1,12 @@
+#!/usr/bin/stap
+
+probe begin {
+	printf("ready go\n");
+}
+
+probe kernel.function("*@net/ipv4/tcp.c") {
+	$sysctl_tcp_fin_timeout = $1
+	printf("sysctl_tcp_fin_timeout = %d\n", $sysctl_tcp_fin_timeout);
+	exit()
+}
+
