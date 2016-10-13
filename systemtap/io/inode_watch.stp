@@ -1,0 +1,11 @@
+#!/usr/bin/stap
+#Usage: stap inode_watch.stp major minor ino
+
+probe vfs.read, vfs.write
+{
+	# dev and ino are defined by vfs.write and vfs.read
+	if (dev == MKDEV($1, $2) && ino == $3)
+		printf ("%s(%d) %s 0x%x/%u\n",
+			execname(), pid(), probefunc(), dev, ino)
+
+}
